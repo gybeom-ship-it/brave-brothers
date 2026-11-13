@@ -290,20 +290,118 @@ textarea { width: 100%; box-sizing: border-box; min-height: 80px; background: va
 .kv span { color: var(--dim); }
 
 /* title / creation */
-.cover { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 28%, #3a2414 0%, #120c08 55%, var(--night) 100%); overflow: auto; padding: 16px; }
-.cover-in { width: min(620px, 100%); display: grid; gap: 14px; padding: 18px; }
-.cover h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(36px, 8vw, 60px); line-height: 1; letter-spacing: .03em; color: #efe2c0; text-shadow: 0 2px 0 #000, 0 0 22px #c8501e66; }
-.cover h1 span { display: block; font-family: var(--serif); font-size: .3em; color: #c8963e; letter-spacing: .4em; margin-top: 10px; }
-.cover p { margin: 0; color: var(--dim); max-width: 60ch; line-height: 1.6; }
-.classes { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; }
-.cls { text-align: left; display: grid; gap: 4px; padding: 8px 10px; }
-.cls b { font-size: 14px; }
-.cls small { color: var(--dim); line-height: 1.45; text-shadow: none; }
-.cls[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--sel); }
-.namebox { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.namebox input { flex: 1; min-width: 160px; font: inherit; color: var(--text); background: var(--slab-2); border: 1px solid #000; box-shadow: inset 0 0 0 1px #4a4740; padding: 6px 8px; }
-.cover .stats { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
-.cover .stat { grid-template-columns: 1fr auto; }
+.cover { position: absolute; inset: 0; z-index: 5; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); gap: clamp(12px, 2.4vw, 36px); align-items: stretch;
+  padding: clamp(10px, 3vh, 36px) max(clamp(12px, 3vw, 44px), env(safe-area-inset-right, 0px)) clamp(10px, 3vh, 36px) max(clamp(12px, 3vw, 44px), env(safe-area-inset-left, 0px));
+  background: linear-gradient(180deg, #17142a 0%, #2c1d2c 34%, #5a2a22 58%, #23130d 74%, #0d0a08 100%); overflow: hidden; color: var(--text); word-break: keep-all; overflow-wrap: anywhere; }
+.cover[hidden] { display: none; }
+.cv-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.cv-bg svg { position: absolute; left: 0; bottom: 0; width: 100%; height: 72%; }
+.cv-bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 34% 30% at 26% 74%, #ff8a3a40, transparent 70%), radial-gradient(ellipse at 50% 50%, transparent 55%, #0008 100%); }
+.cv-ember { position: absolute; bottom: -10px; width: 3px; height: 3px; border-radius: 50%; background: #ffb060; box-shadow: 0 0 6px 2px #ff7a2a99; opacity: 0; animation: cvEmber linear infinite; }
+@keyframes cvEmber { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate(var(--dx, 30px), -78vh); opacity: 0; } }
+.cv-left, .cv-right { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 1.6vh, 16px); }
+.cv-brand h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(30px, min(6.4vw, 9.5vh), 78px); line-height: 1.02; letter-spacing: .02em; color: #f4e6c4; text-shadow: 0 3px 0 #000, 0 0 30px #ff7a3a55; text-wrap: balance; word-break: keep-all; }
+.cv-brand .cv-sub { display: block; margin-top: .5em; font-family: var(--serif); font-size: clamp(10px, 1.1vw, 13px); letter-spacing: .42em; color: #d8a24e; }
+.cv-brand p { margin: .7em 0 0; color: #cdbfa6; font-size: clamp(11px, 1.15vw, 14px); line-height: 1.55; max-width: 38ch; }
+.cv-label { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--serif); font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #d8a24e; text-transform: uppercase; }
+.cv-label small { letter-spacing: 0; text-transform: none; color: var(--dim); font-family: var(--pixel); }
+.cv-chars { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.cv-list { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 8px; align-content: start; padding: 2px; scrollbar-width: thin; }
+.cv-card { position: relative; display: grid; grid-template-columns: 54px minmax(0, 1fr); align-items: center; gap: 10px; padding: 6px 10px 6px 6px; text-align: left; cursor: pointer; color: var(--text);
+  background: linear-gradient(180deg, #2a2420e8, #18140fe8); border: 1px solid #000; box-shadow: inset 0 0 0 1px #5a4a32, 0 4px 14px #0008; transition: box-shadow .15s, transform .15s; font: inherit; }
+.cv-card:hover, .cv-card:focus-visible { box-shadow: inset 0 0 0 1px var(--brass), 0 0 0 1px #000, 0 6px 22px #ff8a3a33; transform: translateY(-1px); outline: none; }
+.cv-card canvas { width: 54px; height: 66px; background: radial-gradient(ellipse at 50% 85%, #ffd27a33, transparent 70%); }
+.cv-card .nm { display: grid; gap: 3px; min-width: 0; }
+.cv-card .nm b { padding-right: 52px; }
+.cv-card .nm b { font-size: 15px; color: #f6ead0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cv-card .nm span { color: var(--dim); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 44px; }
+.cv-card .nm span + span { padding-right: 44px; }
+.cv-card .nm em { font-style: normal; color: var(--num); }
+.cv-card .play { position: absolute; right: 10px; bottom: 7px; font-family: var(--serif); font-weight: 700; font-size: 11px; letter-spacing: .12em; color: #ffd27a; }
+.cv-tools { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; }
+.cv-tools button { min-width: 24px; height: 22px; padding: 0 5px; font-size: 11px; background: #0006; box-shadow: none; border: 1px solid #0000; color: var(--dim); }
+.cv-tools button:hover { color: var(--text); border-color: #6a5a3a; }
+.cv-tools .on { color: #ffd27a; }
+.cv-tools .warn { color: #fff; background: #8a2a1e; }
+.cv-empty { margin: 0; padding: 14px; color: #cdbfa6; border: 1px dashed #6a5a3a; background: #0004; line-height: 1.6; }
+.cv-imp { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 11px; }
+.cv-imp button.link { background: none; border: 0; box-shadow: none; padding: 2px 0; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; font-size: 11px; }
+.cv-imp button.link:hover { color: var(--text); }
+.cv-imp .codebox { display: flex; gap: 6px; width: 100%; }
+.cv-imp textarea { flex: 1; min-width: 0; height: 46px; font: inherit; color: var(--text); background: var(--slab-2); border: 1px solid #000; }
+.cv-right { padding: clamp(10px, 2vh, 20px) clamp(12px, 1.8vw, 22px); background: linear-gradient(180deg, #1f1b17f0, #14110ef2); border: 1px solid #000; box-shadow: inset 0 0 0 1px #6a5434, inset 0 0 0 4px #0006, 0 18px 50px #000b; overflow-y: auto; scrollbar-width: thin; }
+.cv-right::before { content: ""; position: absolute; inset: 0; background-image: var(--tex); opacity: .18; pointer-events: none; }
+.cv-right > * { position: relative; }
+.cv-name { display: flex; gap: 10px; align-items: center; }
+.cv-name label { flex: none; font-family: var(--serif); font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #d8a24e; }
+.cv-name input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: #fff4dc; background: #0b0908; border: 1px solid #000; box-shadow: inset 0 0 0 1px #4a3c28; padding: 7px 10px; }
+.cv-name input:focus { outline: none; box-shadow: inset 0 0 0 1px var(--brass); }
+.cover .classes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cover .cls { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr); grid-template-rows: auto auto 1fr; column-gap: 8px; row-gap: 2px; align-items: start; text-align: left; padding: 6px 8px 7px 4px;
+  background: linear-gradient(180deg, #2a241ee0, #17130fe0); border: 1px solid #000; box-shadow: inset 0 0 0 1px #4a3c28; color: var(--text); font: inherit; cursor: pointer; }
+.cover .cls canvas { grid-row: 1 / 4; width: 46px; height: 58px; }
+.cover .cls > b, .cover .cls > small { grid-column: 2; }
+.cover .cls > small + small { color: #c8a868; }
+.cover .cls b { font-size: 15px; color: #f6ead0; }
+.cover .cls small { color: var(--dim); line-height: 1.4; font-size: 11px; text-shadow: none; }
+.cover .cls[aria-pressed="true"] { background: linear-gradient(180deg, #4a3620, #22180e); box-shadow: inset 0 0 0 1px #ffd27a, 0 0 0 1px #000, 0 0 18px #ff9a4a44; }
+.cover .cls[aria-pressed="true"] b { color: #ffe2a0; }
+.cv-statbar { display: flex; justify-content: space-between; align-items: baseline; }
+.cv-left-pts { font-size: 12px; color: var(--dim); }
+.cv-left-pts b { font-size: 16px; color: var(--num); margin: 0 2px; }
+.cv-left-pts.done b { color: var(--good); }
+.cover .stats { display: grid; grid-template-columns: 1fr; gap: 5px; }
+.cover .stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 5px 6px 5px 10px; background: #0b0908c0; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a3026; }
+.cover .stat .sn { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.cover .stat .sn b { flex: none; width: 3em; }
+.cover .stat .sn b { font-size: 13px; color: #f0e2c4; }
+.cover .stat .sn small { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cover .stat .pm { display: flex; align-items: center; gap: 2px; }
+.cover .stat .pm button { width: 28px; height: 26px; padding: 0; font-size: 15px; }
+.cover .stat .pm .num { min-width: 28px; text-align: center; font-size: 16px; }
+.cover .stat .pm .num.up { color: var(--good); }
+.cv-prev { display: flex; flex-wrap: wrap; gap: 4px; }
+.cv-prev span { padding: 3px 7px; font-size: 11px; color: var(--dim); background: #0b090899; border: 1px solid #2e261d; white-space: nowrap; }
+.cv-prev b { color: var(--text); margin-left: 3px; }
+.cv-prev i { font-style: normal; color: var(--good); margin-left: 2px; }
+.cv-go { margin-top: auto; display: grid; }
+.cover .go { padding: 11px 16px; font-size: 15px; letter-spacing: .06em; }
+.cover .go:disabled { background: linear-gradient(#4a4032, #2a241c); color: #b8a888; }
+.cv-help summary { cursor: pointer; color: var(--dim); font-size: 11px; }
+.cv-help p { margin: 6px 0 0; color: var(--dim); font-size: 11px; line-height: 1.6; }
+@media (min-height: 700px) { .cover .cls { grid-template-columns: 64px minmax(0, 1fr); padding: 8px 10px 9px 6px; } .cover .cls canvas { width: 64px; height: 84px; } .cv-card { grid-template-columns: 62px minmax(0, 1fr); } .cv-card canvas { width: 62px; height: 76px; } }
+/* short screens (phones held sideways): one tight row of everything */
+@media (max-height: 520px) {
+  .cover { gap: 12px; padding-top: max(8px, env(safe-area-inset-top, 0px)); padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
+  .cv-brand h1 { font-size: clamp(22px, 7.2vh, 34px); }
+  .cv-brand .cv-sub { margin-top: .35em; font-size: 9px; }
+  .cv-brand p, .cv-help { display: none; }
+  .cv-left, .cv-right { gap: 6px; }
+  .cv-right { padding: 8px 10px; }
+  .cv-card { grid-template-columns: 40px minmax(0, 1fr); padding: 3px 8px 3px 3px; }
+  .cv-card canvas { width: 40px; height: 48px; }
+  .cv-card .nm b { font-size: 13px; }
+  .cover .cls { grid-template-columns: 34px minmax(0, 1fr); padding: 3px 6px 4px 2px; }
+  .cover .cls canvas { width: 34px; height: 42px; }
+  .cover .cls b { font-size: 13px; }
+  .cover .cls > small + small { display: none; }
+  .cover .cls > small { font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cover .stats { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 4px; }
+  .cover .stat .sn b { width: auto; }
+  .cv-card .nm span + span { display: none; }
+  .cover .stat { padding: 2px 4px 2px 7px; }
+  .cover .stat .sn small { display: none; }
+  .cover .stat .pm button { width: 26px; height: 26px; }
+  .cover .stat .pm .num { min-width: 22px; }
+  .cover .stat .sn b { font-size: 12px; }
+  .cv-prev span { padding: 1px 5px; font-size: 10px; }
+  .cover .go { padding: 7px 12px; font-size: 14px; }
+  .cv-name input { padding: 4px 8px; font-size: 14px; }
+}
+@media (max-height: 520px) and (max-width: 760px) { .cover .cls > small { display: none !important; } .cover .cls { grid-template-columns: 30px minmax(0, 1fr); align-items: center; } .cover .cls canvas { width: 30px; height: 36px; } .cover .stat .pm button { width: 24px; height: 24px; } .cv-prev span { font-size: 9px; } }
+/* narrow and tall (rare: a desktop window squeezed thin): stack and scroll */
+@media (max-width: 700px) and (min-height: 521px) { .cover { grid-template-columns: 1fr; overflow-y: auto; } .cv-chars { flex: none; } .cv-list { overflow: visible; } .cv-right { overflow: visible; } }
+@media (prefers-reduced-motion: reduce) { .cv-ember { display: none; } }
 .go { background: linear-gradient(#b8863e, #6a4618); color: #fff4d8; font-weight: 700; padding: 7px 16px; }
 .go:hover { background: linear-gradient(#cc9848, #7a521e); }
 .dead { position: absolute; inset: 0; display: grid; place-items: center; background: #1a0604c0; }
@@ -357,17 +455,31 @@ textarea { width: 100%; box-sizing: border-box; min-height: 80px; background: va
     </div>
 
     <div class="cover" id="cover">
-      <div class="cover-in slab">
-        <h1>형제는 용감해질까?<span>잿빛 관문 · ASHGATE SAGA</span></h1>
-        <p>폐광이 된 회색 산맥 아래, 잿빛 군주가 잠든 왕좌까지 다섯 층. 관문 마을에서 무기를 고르고, 황무지에서 첫 사냥을 시작하세요. 혼자서도, 인터넷이 되면 「함께하기」로 다른 사람과 같은 세계에서도 즐기는 쿼터뷰 사냥 게임입니다.</p>
-        <div id="coverContinue"></div>
-        <div class="sect">새 캐릭터</div>
-        <div class="namebox"><input id="inName" maxlength="12" placeholder="이름 (최대 12자)" value="히야공주"><span class="hint">직업을 고르고 보너스 6점을 나누세요.</span></div>
+      <div class="cv-bg" aria-hidden="true"><svg viewBox="0 0 1600 700" preserveAspectRatio="xMidYMax slice">
+        <path fill="#2a1c26" d="M0 330 L120 250 L220 300 L340 170 L460 280 L560 210 L700 300 L820 150 L950 260 L1080 190 L1200 280 L1330 160 L1470 260 L1600 210 L1600 700 L0 700Z"/>
+        <path fill="#1d1418" d="M0 420 L160 330 L300 400 L420 320 L560 410 L680 350 L800 420 L930 330 L1060 400 L1180 340 L1320 420 L1450 350 L1600 400 L1600 700 L0 700Z"/>
+        <path fill="#0f0b0a" d="M0 560 Q380 515 760 545 T1600 535 L1600 700 L0 700Z"/>
+        <g fill="#0f0b0a"><path d="M300 560 L300 330 L292 330 L292 306 L306 306 L306 318 L318 318 L318 306 L332 306 L332 318 L344 318 L344 306 L358 306 L358 330 L350 330 L350 400 L470 400 L470 330 L462 330 L462 306 L476 306 L476 318 L488 318 L488 306 L502 306 L502 318 L514 318 L514 306 L528 306 L528 330 L520 330 L520 560Z"/>
+        </g>
+        <path d="M372 560 L372 470 Q410 420 448 470 L448 560Z" fill="#ff9a4a" opacity=".5"/><path d="M380 560 L380 474 Q410 436 440 474 L440 560Z" fill="#ffc070" opacity=".35"/>
+        <rect x="317" y="350" width="10" height="16" rx="5" fill="#ffb060" opacity=".75"/><rect x="493" y="350" width="10" height="16" rx="5" fill="#ffb060" opacity=".75"/>
+      </svg></div>
+      <section class="cv-left">
+        <header class="cv-brand"><h1>형제는 용감해질까?</h1><span class="cv-sub">잿빛 관문 · ASHGATE SAGA</span>
+          <p>회색 산맥 아래 다섯 층, 잿빛 군주가 잠든 왕좌까지. 혼자서도, 「함께하기」로 친구와도.</p></header>
+        <div id="coverContinue" class="cv-chars"></div>
+        <div class="cv-imp" id="coverImport"></div>
+        <details class="cv-help"><summary>조작 방법</summary><p>땅을 누르면 이동, 몬스터를 누르면 공격, 사람을 누르면 대화. 휴대폰은 화면 왼쪽을 누른 채 끌면 이동. 단축키 세 줄 — 1~8 소지품 · Q~O 공격 마법 · A~K 방어·버프. Tab 가방, ₩ 캐릭터, F1 정보.</p></details>
+      </section>
+      <section class="cv-right">
+        <div class="cv-label">새 캐릭터 만들기</div>
+        <div class="cv-name"><label for="inName">이름</label><input id="inName" maxlength="12" placeholder="이름 (최대 12자)" value="히야공주" autocomplete="off"></div>
         <div class="classes" id="clsPick"></div>
+        <div class="cv-statbar"><span class="cv-label">능력치</span><span class="cv-left-pts" id="cvPts"></span></div>
         <div class="stats" id="createStats"></div>
-        <div><button class="go" id="bStart">관문으로 들어가기</button></div>
-        <p class="hint">조작: 땅을 누르면 이동, 몬스터를 누르면 공격, 마우스 오른쪽 클릭은 지정한 공격 마법(몬스터 위를 누르면 그 몬스터에게; 단축키 칸 설정에서 바꾸기), 사람을 누르면 대화. 단축키 세 줄 — 1~8 소지품 · Q~O 공격 마법 · A~K 방어·버프 (칸을 길게 누르거나 오른쪽 클릭하면 넣을 것과 키를 바꿀 수 있음), Tab 가방, ₩ 캐릭터(능력치·장비). 저장은 이 브라우저에만 남습니다.</p>
-      </div>
+        <div class="cv-prev" id="cvPrev"></div>
+        <div class="cv-go"><button class="go" id="bStart">관문으로 들어가기</button></div>
+      </section>
     </div>
   </div>
 </div>
@@ -1311,7 +1423,7 @@ Object.assign(THEMES, {
   windvale: { name: "바람개비 마을", bar: 3.2, chords: [[48, 55, 60, 64], [53, 57, 60, 65], [50, 57, 62, 65], [55, 59, 62, 67]], scale: [72, 74, 76, 77, 79, 81, 83, 84], cut: 2600, pad: "triangle", padVol: .03, mel: .85, voice: "box", arp: .05, drum: "t..t.t..", drumVol: .45, birds: .25, wind: .05, duck: .4 },
 });
 const RHYTHMS = [[1, 0, 1, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 0, 1, 0], [1, 1, 1, 0, 1, 0, 0, 0], [1, 0, 1, 1, 0, 1, 1, 0], [1, 0, 0, 0, 1, 0, 1, 1]];
-const curTheme = () => { const m = P && MAPS[P.map]; return !m || m.safe ? (THEMES[m.music] || THEMES.town) : THEMES[m.music || m.id] || (themeOf(m) === "moor" ? THEMES.moor : THEMES.mine1); };
+const curTheme = () => { const m = P && MAPS[P.map]; return !m ? THEMES.town : m.safe ? (THEMES[m.music] || THEMES.town) : THEMES[m.music || m.id] || (themeOf(m) === "moor" ? THEMES.moor : THEMES.mine1); };
 function musicTarget() { return AUD.mode === 2 ? 0 : AUD.vol.music * (fighting() ? .42 * (curTheme().duck || .35) : .42); }
 function ambTarget() { return AUD.mode === 2 ? 0 : AUD.vol.amb * (fighting() ? .35 : 1.2); }
 function audioFight() { AUD.fight = performance.now() / 1000; }
@@ -5018,31 +5130,43 @@ function enterGame(map, at) {
 // ───────────────────────── creation screen
 let pick = "knight", alloc = { str: 0, dex: 0, con: 0, int: 0, wis: 0 };
 const BONUS = 6;
+// small portraits on the title screen: draw a saved (or sample) character the way the game draws them
+function portraitOf(sv, c) {
+  const dpr = Math.min(3, window.devicePixelRatio || 1), w = c.clientWidth || +c.dataset.w, h = c.clientHeight || +c.dataset.h;
+  c.width = w * dpr; c.height = h * dpr;
+  const g = c.getContext("2d"), main = ctx, keep = P, k = (h / 72) * 1.3 / CS;
+  P = Object.assign({ inv: [], equip: {}, cls: "ranger", stats: {}, buffs: {}, cds: {} }, sv);
+  const e = Object.assign({}, P, { path: [], face: Math.PI / 4, walk: 0, swing: 0, aim: null, aimV: 0, bowUp: 0, bowDraw: 0, meongT: 0, dead: false });
+  ctx = g; try { g.setTransform(dpr * k, 0, 0, dpr * k, 0, 0); const L = playerLook(); (L.fem ? drawElf : drawMan)(e, (w / 2) / k, (h - 3) / k, L, 1); } catch (err) { } finally { ctx = main; P = keep; }
+}
+const CLS_SAMPLE = {};
+function classSample(cls) { if (CLS_SAMPLE[cls]) return CLS_SAMPLE[cls]; const keep = P; try { createPlayer("", cls, CLASSES[cls].base); CLS_SAMPLE[cls] = P; } finally { P = keep; } return CLS_SAMPLE[cls]; }
+function portraitCanvas(sv, w, h) { const c = document.createElement("canvas"); c.dataset.w = w; c.dataset.h = h; c.style.width = w + "px"; c.style.height = h + "px"; requestAnimationFrame(() => { c.style.width = c.style.height = ""; portraitOf(sv, c); }); return c; }
 function renderCreate() {
   const cp = $("clsPick"); cp.innerHTML = "";
   for (const [id, c] of Object.entries(CLASSES)) {
     const b = el("button", "cls"); b.setAttribute("aria-pressed", String(pick === id)); b.id = "cls-" + id;
-    b.append(el("b", "", c.name), el("small", "", c.desc), el("small", "", `기술: ${c.skills.map(s => s.name).join(", ")}`));
+    b.append(portraitCanvas(classSample(id), 46, 58), el("b", "", c.name), el("small", "", c.desc), el("small", "", `기술: ${c.skills.map(s => s.name).join(", ")}`));
     b.onclick = () => { pick = id; alloc = { str: 0, dex: 0, con: 0, int: 0, wis: 0 }; renderCreate(); };
     cp.append(b);
   }
   const used = Object.values(alloc).reduce((a, b) => a + b, 0), st = $("createStats"); st.innerHTML = "";
   for (const k of Object.keys(STAT_NAMES)) {
     const s = el("div", "stat"), v = CLASSES[pick].base[k] + alloc[k];
-    { const nm = el("span", "", STAT_NAMES[k] + " "); nm.append(el("small", "hint", { str: "근접 피해·명중·막기", dex: "활 피해·명중·회피·치명", con: "체력·회복·받는 피해↓", int: "마법 위력·마법 치명", wis: "마력·치유·원거리 피해↓" }[k])); s.append(nm); }
-    const g = el("span"); g.style.display = "flex"; g.style.gap = "4px"; g.style.alignItems = "center";
-    g.append(btn("−", () => { if (alloc[k] > 0) { alloc[k]--; renderCreate(); } }, alloc[k] <= 0), el("b", "num", String(v)), btn("+", () => { if (used < BONUS && v < 18) { alloc[k]++; renderCreate(); } }, used >= BONUS || v >= 18));
+    { const nm = el("span", "sn"); nm.append(el("b", "", STAT_NAMES[k]), el("small", "", { str: "근접 피해·명중·막기", dex: "활 피해·명중·회피·치명", con: "체력·회복·받는 피해↓", int: "마법 위력·마법 치명", wis: "마력·치유·원거리 피해↓" }[k])); s.title = nm.textContent; s.append(nm); }
+    const g = el("span", "pm");
+    g.append(btn("−", () => { if (alloc[k] > 0) { alloc[k]--; renderCreate(); } }, alloc[k] <= 0), el("b", "num" + (alloc[k] ? " up" : ""), String(v)), btn("+", () => { if (used < BONUS && v < 18) { alloc[k]++; renderCreate(); } }, used >= BONUS || v >= 18));
     s.append(g); st.append(s);
   }
-  const left = el("div", "stat"); left.append(el("span", "", "남은 보너스"), el("b", "num", String(BONUS - used))); st.append(left);
+  { const pt = $("cvPts"); if (pt) { pt.className = "cv-left-pts" + (used >= BONUS ? " done" : ""); pt.innerHTML = ""; pt.append(used >= BONUS ? "보너스 다 나눔 " : "남은 보너스", el("b", "", used >= BONUS ? "✓" : String(BONUS - used)), used >= BONUS ? "" : "점"); } }
   { const c = CLASSES[pick], base = c.base, cur = {}; for (const k of Object.keys(STAT_NAMES)) cur[k] = base[k] + alloc[k];
     const calc = st => ({ "체력": c.hp + Math.max(0, Math.floor((st.con - 10) / 2)) * 2, "마력": c.mp + Math.max(0, Math.floor((st.wis - 10) / 2)) * 2, "근접 피해": Math.floor((st.str - 10) / 2), "활 피해": Math.floor((st.dex - 10) / 2),
       "명중": Math.round(pick === "ranger" ? st.dex * 2 : pick === "mage" ? st.int * 1.4 + st.dex * .6 : st.str * 1.4 + st.dex * .6), "회피": Math.round(st.dex * 1.5), "막기 %": st.str - 10, "치명타 %": +(5 + (st.dex - 10) * .4).toFixed(1),
       "받는 피해 −": Math.max(0, Math.floor((st.con - 10) / 3)), "마법 위력": Math.round((6 + 1.6 + st.int * 1.5 + st.wis * .4) * (pick === "mage" ? 1.3 : 1)), "마법 치명 %": +(3 + (st.int - 10) * .6 + (pick === "mage" ? 5 : 0)).toFixed(1), "치유력": Math.round((6 + 1.6 + st.wis * 1.4 + st.int * .4) * (pick === "mage" ? 1.25 : 1)) });
-    const now = calc(cur), was = calc(base), box = el("div", "stat"); box.style.cssText = "grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 10px";
-    for (const [k2, v] of Object.entries(now)) { const it = el("span", "", k2 + " "); it.append(el("b", "num", String(v))); const dlt = +(v - was[k2]).toFixed(1); if (dlt) { const g = el("b", "", (dlt > 0 ? " +" : " ") + dlt); g.style.color = "#8fe07a"; it.append(g); } box.append(it); }
-    st.append(box); }
-  const bs = $("bStart"); if (bs) { bs.disabled = used < BONUS; bs.textContent = used < BONUS ? `보너스 ${BONUS - used}점을 더 나눠 주세요` : "관문으로 들어가기"; }
+    const now = calc(cur), was = calc(base), box = $("cvPrev"); box.innerHTML = "";
+    for (const [k2, v] of Object.entries(now)) { const it = el("span", "", k2); it.append(el("b", "", String(v))); const dlt = +(v - was[k2]).toFixed(1); if (dlt) it.append(el("i", "", (dlt > 0 ? "+" : "") + dlt)); box.append(it); }
+  }
+  const bs = $("bStart"); if (bs) { bs.disabled = used < BONUS; bs.textContent = used < BONUS ? `보너스 ${BONUS - used}점을 더 나눠 주세요` : `${CLASSES[pick].name}로 관문에 들어가기`; }
 }
 $("bStart").onclick = () => {
   if (Object.values(alloc).reduce((a, b) => a + b, 0) < BONUS) return renderCreate();
@@ -5094,32 +5218,36 @@ function movedNotice() {
 // cover: every saved character, newest first — pick one to continue; deleting asks twice
 function renderChars() {
   const c = $("coverContinue"); c.innerHTML = ""; const list = charList().sort((a, b) => b.t - a.t);
-  if (!list.length) return;
-  c.append(el("div", "sect", `내 캐릭터 ${list.length}/${CHAR_MAX}`));
-  const box = el("div"); box.style.cssText = "display:grid;gap:6px";
+  const lab = el("div", "cv-label", list.length ? "이어 하기" : "처음 오셨군요"); if (list.length) lab.append(el("small", "", `${list.length}/${CHAR_MAX} · 누르면 시작`)); c.append(lab);
+  if (!list.length) { c.append(el("p", "cv-empty", "오른쪽에서 이름과 직업을 정하고 보너스 6점을 나누면 바로 시작해요. 만든 캐릭터는 여기에 카드로 남아요.")); return; }
+  const box = el("div", "cv-list");
   for (const ch of list) {
-    const row = el("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch";
-    const go = el("button", "go", `${ch.name} — ${CLASSES[ch.cls] ? CLASSES[ch.cls].name : ""} Lv ${ch.level}${MAPS[ch.map] ? " · " + MAPS[ch.map].name : ""}`); go.style.flex = "1"; go.style.minWidth = "0";
-    go.onclick = () => { const sv = readChar(ch.cid); if (!sv) return renderChars(); sv.cid = ch.cid; startFrom(sv); log(`${sv.name}, 다시 오셨군요.`, "good"); };
-    const lock = btn(ch.locked ? "🔒 잠김" : "🔓 잠그기", () => { setLock(ch.cid, !ch.locked); renderChars(); }); lock.title = ch.locked ? "누르면 잠금이 풀립니다" : "잠그면 지울 수 없어요"; if (ch.locked) lock.style.color = "#ffd27a";
-    const del = btn("지우기", () => { del.hidden = true; yes.hidden = false; no.hidden = false; }, !!ch.locked), yes = btn("정말 지우기", () => armDelete(yes, no, del, () => { deleteChar(ch.cid); renderChars(); })), no = btn("취소", () => { del.hidden = false; yes.hidden = true; no.hidden = true; });
-    if (ch.locked) del.title = "잠금을 풀어야 지울 수 있어요";
-    yes.hidden = no.hidden = true; row.append(go, lock, del, yes, no); box.append(row);
+    const sv = readChar(ch.cid) || {}, card = el("div", "cv-card"); card.tabIndex = 0; card.setAttribute("role", "button");
+    const nm = el("div", "nm"); nm.append(el("b", "", ch.name)); const sub = el("span"); sub.append(`${CLASSES[ch.cls] ? CLASSES[ch.cls].name : ""} · `, el("em", "", `Lv ${ch.level}`)); nm.append(sub, el("span", "", MAPS[ch.map] ? MAPS[ch.map].name : ""));
+    card.append(portraitCanvas(sv, 54, 66), nm, el("span", "play", "시작 ▸"));
+    const go = () => { const s2 = readChar(ch.cid); if (!s2) return renderChars(); s2.cid = ch.cid; startFrom(s2); log(`${s2.name}, 다시 오셨군요.`, "good"); };
+    card.onclick = go; card.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
+    const tools = el("div", "cv-tools"); tools.onclick = e => e.stopPropagation();
+    const lock = btn(ch.locked ? "🔒" : "🔓", () => { setLock(ch.cid, !ch.locked); renderChars(); }); lock.title = ch.locked ? "잠김 — 누르면 잠금이 풀립니다" : "잠그면 지울 수 없어요"; if (ch.locked) lock.classList.add("on");
+    const del = btn("✕", () => { del.hidden = true; yes.hidden = false; no.hidden = false; }, !!ch.locked), yes = btn("정말 지우기", () => armDelete(yes, no, del, () => { deleteChar(ch.cid); renderChars(); })), no = btn("취소", () => { del.hidden = false; yes.hidden = true; no.hidden = true; });
+    del.title = ch.locked ? "잠금을 풀어야 지울 수 있어요" : "지우기"; yes.classList.add("warn");
+    yes.hidden = no.hidden = true; tools.append(lock, del, yes, no); card.append(tools); box.append(card);
   }
-  c.append(box, el("p", "hint", "새 캐릭터를 만들어도 위 캐릭터들은 그대로 남아요. 🔒 잠긴 캐릭터는 지울 수 없어요."));
+  c.append(box);
 }
 buildMaps();
 function boot(data) {
   renderCreate();
   migrateSaves(); if (movedNotice()) return; const moved = importMove();
   const s = (data && data.save && JSON.parse(data.save)) || null;
-  { const c0 = $("coverContinue"); const imp = el("div"); imp.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px";
-    const bF = el("button", "", "다른 곳에서 키운 캐릭터 가져오기 (저장 파일)"); bF.onclick = () => pickSaveFile();
-    const bC = el("button", "", "저장 코드 붙여넣기"), box = el("div"); box.hidden = true; box.style.cssText = "display:flex;gap:6px;width:100%";
-    const ta = el("textarea"); ta.id = "coverCode"; ta.placeholder = "저장 코드를 붙여 넣으세요"; ta.style.cssText = "flex:1;min-width:0;height:54px"; box.append(ta, btn("불러오기", () => { if (ta.value.trim()) importCode(ta.value); }));
+  { const imp = $("coverImport");
+    const bF = el("button", "link", "저장 파일 가져오기"); bF.onclick = () => pickSaveFile();
+    const bC = el("button", "link", "저장 코드 붙여넣기"), box = el("div", "codebox"); box.hidden = true;
+    const ta = el("textarea"); ta.id = "coverCode"; ta.placeholder = "저장 코드를 붙여 넣으세요"; box.append(ta, btn("불러오기", () => { if (ta.value.trim()) importCode(ta.value); }));
     bC.onclick = () => { box.hidden = !box.hidden; if (!box.hidden) ta.focus(); };
-    imp.append(bF, bC, box); c0.after(imp); }
-  renderChars(); if (moved) $("coverContinue").prepend(el("p", "hint", `예전 주소에서 캐릭터 ${moved}명을 옮겨 왔어요. 이 새 주소를 홈 화면에 추가해 주세요.`));
+    imp.append(el("span", "hint", "다른 곳에서 키운 캐릭터:"), bF, bC, box); }
+  { const bg = document.querySelector("#cover .cv-bg"); for (let i = 0; i < 18; i++) { const e = el("i", "cv-ember"); e.style.left = (8 + Math.random() * 84) + "%"; e.style.animationDuration = (7 + Math.random() * 9) + "s"; e.style.animationDelay = (-Math.random() * 14) + "s"; e.style.setProperty("--dx", (Math.random() * 120 - 60) + "px"); bg.append(e); } }
+  renderChars(); if (moved) $("coverContinue").append(el("p", "hint", `예전 주소에서 캐릭터 ${moved}명을 옮겨 왔어요. 이 새 주소를 홈 화면에 추가해 주세요.`));
   if (s && s.name && data && data.save && data.live) startFrom(s);
   resize();
   BODY_FONT = getComputedStyle(document.body).fontFamily; DISPLAY_FONT = getComputedStyle(document.documentElement).getPropertyValue("--display") || "serif";
