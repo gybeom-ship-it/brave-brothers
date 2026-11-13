@@ -1,5 +1,5 @@
-// 애쉬게이트 사가 오프라인 실행 (버전 7317afddd0)
-const CACHE = "ashgate-7317afddd0", FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+// 애쉬게이트 사가 오프라인 실행 (버전 273c606f70)
+const CACHE = "ashgate-273c606f70", FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {

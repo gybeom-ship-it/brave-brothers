@@ -1225,8 +1225,18 @@ try { AUD.mode = +(localStorage.getItem("ashgate-sound") || 0) || 0; const v = J
 if (AUD.mode === 1) { AUD.mode = 0; AUD.vol.music = 0; AUD.vol.amb = 0; }
 function saveSound() { try { localStorage.setItem("ashgate-sound", AUD.mode); localStorage.setItem("ashgate-vol", JSON.stringify(AUD.vol)); } catch (e) {} }
 const fighting = () => performance.now() / 1000 - (AUD.fight || -99) < 4;
+// iPhone: Web Audio stays silent until it is started inside a touch, and the ring/silent switch mutes it.
+// So on every touch: set the "playback" audio session (iOS 17+), keep a tiny silent <audio> playing (older iOS), and resume.
+let unlockEl = null;
+function audioUnlock() {
+  try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (e) { }
+  if (!TOUCH() || AUD.mode === 2) return;
+  try { if (!unlockEl) { unlockEl = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="); unlockEl.loop = true; unlockEl.setAttribute("playsinline", ""); unlockEl.volume = 0.01; }
+    if (unlockEl.paused) { const r = unlockEl.play(); if (r && r.catch) r.catch(() => { }); } } catch (e) { }
+  if (AUD.ac) try { const b = AUD.ac.createBufferSource(); b.buffer = AUD.ac.createBuffer(1, 1, 22050); b.connect(AUD.ac.destination); b.start(0); } catch (e) { }
+}
 function audioInit() {
-  if (AUD.ac) { if (AUD.ac.state === "suspended" && AUD.mode < 2) AUD.ac.resume(); return; }
+  if (AUD.ac) { if (AUD.ac.state !== "running" && AUD.mode < 2) { const r = AUD.ac.resume(); if (r && r.catch) r.catch(() => { }); audioUnlock(); } return; }
   const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
   const ac = AUD.ac = new AC();
   AUD.master = ac.createGain(); AUD.master.connect(ac.destination);
@@ -1239,6 +1249,8 @@ function audioInit() {
   const nb = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; AUD.noise = nb;
   applySound(); AUD.next = ac.currentTime + .3;
   AUD.timer = setInterval(musicTick, 200);
+  if (ac.state !== "running") { const r = ac.resume(); if (r && r.catch) r.catch(() => { }); }
+  audioUnlock();
 }
 function applySound() {
   const b = $("bSound"), V = AUD.vol; if (b) { b.textContent = AUD.mode === 2 || V.master === 0 ? "🔇" : V.master < .45 ? "🔉" : "🔊"; b.title = "소리 설정"; }
@@ -1485,8 +1497,8 @@ const SFX = {
     for (let i = 0; i < 7; i++) noiseHit(t + .12 + Math.random() * .45, .04, { vol: .22, f0: 2400 + Math.random() * 1500, f1: 1500, q: 4 }); },
   magic() { audioFight(); if (!this.ok()) return; const t = AUD.ac.currentTime; [0, 4, 7, 12].forEach((iv, k) => tone(AUD.sfx, midi(79 + iv), t + k * .035, .02, { vol: .07, atk: .003, rel: .35 })); noiseHit(t, .3, { vol: .08, f0: 5000, f1: 2500, q: 3 }); },
 };
-document.addEventListener("visibilitychange", () => { if (!AUD.ac) return; if (document.hidden) AUD.ac.suspend(); else if (AUD.mode < 2) AUD.ac.resume(); });
-for (const ev of ["pointerdown", "keydown", "touchend"]) window.addEventListener(ev, () => { try { audioInit(); } catch (e) {} }, { capture: true, passive: true });
+document.addEventListener("visibilitychange", () => { if (unlockEl) try { document.hidden ? unlockEl.pause() : 0; } catch (e) { } if (!AUD.ac) return; if (document.hidden) AUD.ac.suspend(); else if (AUD.mode < 2) AUD.ac.resume().catch(() => { }); });
+for (const ev of ["pointerdown", "keydown", "touchstart", "touchend", "click"]) window.addEventListener(ev, () => { try { audioInit(); } catch (e) {} }, { capture: true, passive: true });
 function shoot(from, to, col, onHit, kind = "bolt") {
   if (from === P) { if (kind === "arrow") { SFX.bow(); const h0 = onHit; onHit = (...a) => { const hp0 = to.hp, r = h0 && h0(...a); SFX.arrowHit(to.hp < hp0 || to.dead, !!to.dead); return r; }; } else SFX.magic(); }
   const wf = from === P && weapon() ? WFORM[itemDef(weapon()).form] : null;
@@ -4388,10 +4400,25 @@ function tradeOffered(it) { return !!(TRADE && it && TRADE.mine.some(o => o.uid 
 function tradeWire() { const T = TRADE; return { items: T.mine.map(o => { const it = P.inv.find(i => i.uid === o.uid); return it ? { id: it.id, n: o.n, ench: it.ench | 0, mx: it.mx | 0 } : null; }).filter(Boolean), silver: T.silver }; }
 function tradeSig(peerView) { const T = TRADE, a = JSON.stringify(tradeWire()), b = JSON.stringify({ items: T.theirs.map(o => ({ id: o.id, n: o.n, ench: o.ench, mx: o.mx })), silver: T.theirSilver }); return peerView ? b + "|" + a : a + "|" + b; }
 function openTrade() { fwin("trade", TRADE ? `${TRADE.name}님과 거래` : "거래", "TRADE", buildTrade); }
+// 곁으로 가기: jump to where a 함께하기 friend is standing (any map), 10 s cooldown
+let jumpT = 0;
+function jumpTo(p) {
+  if (!P || P.dead) return log("쓰러진 상태에서는 갈 수 없습니다.", "bad");
+  if (!p || !NET.peers[p.id] || !MAPS[p.map]) return log("그 사람의 위치를 아직 모릅니다.", "bad");
+  if (TRADE) return log("거래를 마친 뒤에 갈 수 있어요.", "bad");
+  const left = Math.ceil((jumpT - performance.now()) / 1000); if (left > 0) return log(`${left}초 뒤에 다시 갈 수 있어요.`, "bad");
+  jumpT = performance.now() + 10000; closePanel();
+  world.fx.push({ kind: "petals", x: P.x, y: P.y, t: 0, life: 1 }); if (typeof SFX !== "undefined" && SFX.magic) SFX.magic();
+  const tx = Math.round(p.tx != null ? p.tx : p.x), ty = Math.round(p.ty != null ? p.ty : p.y);
+  if (p.map === P.map) { const m = world.m, [x, y] = walkable(m, tx + 1, ty) ? [tx + 1, ty] : nearestFree(m, tx, ty); P.x = x; P.y = y; P.path = []; P.target = null; }
+  else loadMap(p.map, [tx + 1, ty]);
+  world.fx.push({ kind: "petals", x: P.x, y: P.y, t: 0, life: 1 });
+  log(`${p.name}님 곁으로 날아왔습니다. (${MAPS[p.map].name})`, "good"); save(true);
+}
 function openPeer(p) {
   panel(p.name, body => {
     body.append(el("p", "hint", `${p.name} · ${CLASSES[p.cls] ? CLASSES[p.cls].name : ""} Lv ${p.lv} · ${MAPS[p.map] ? MAPS[p.map].name : ""}`));
-    const a = el("div", "acts"); a.append(btn("거래 신청", () => tradeInvite(p), !!TRADE), btn("인사하기", () => { closePanel(); sendChat(`${p.name}님 안녕하세요!`); })); body.append(a);
+    const a = el("div", "acts"); a.append(btn("곁으로 가기", () => jumpTo(p), !!TRADE || P.dead), btn("거래 신청", () => tradeInvite(p), !!TRADE), btn("인사하기", () => { closePanel(); sendChat(`${p.name}님 안녕하세요!`); })); body.append(a);
   }, "peer");
 }
 function tradeInvite(p) {
@@ -4788,6 +4815,7 @@ function openMenu() {
     body.append(fr2);
     const cp = btn("코드 복사", () => { ta.value = ta.value || exportCode(); navigator.clipboard?.writeText(ta.value).then(() => log("저장 코드를 복사했습니다.", "good")).catch(() => { ta.select(); log("코드를 직접 선택해 복사하세요."); }); });
     body.append(cp);
+    if (TOUCH() && !canFullscreen() && !standalone()) { body.append(el("div", "sect", "화면")); body.append(el("p", "hint", "아이폰 Safari는 웹페이지의 전체 화면을 막아 두었어요. 공유 버튼 → 「홈 화면에 추가」로 만든 아이콘으로 열면 주소창 없이 전체 화면이 됩니다 (캐릭터는 그대로 이어져요).")); }
     if (canFullscreen() && TOUCH()) { body.append(el("div", "sect", "화면")); body.append(btn(fsEl() ? "전체 화면 끄기" : "전체 화면으로", () => { const on = !fsEl(); try { localStorage.setItem("ashgate-fullscreen", on ? "1" : "0"); } catch (e) { } toggleFullscreen(on); setTimeout(refreshPanel, 400); })); }
     body.append(el("div", "sect", "단축키"));
     body.append(el("p", "hint", TOUCH() ? "아래 버튼 24칸에 물약·마법을 넣어 씁니다. 칸을 꾹 누르거나, 편집을 켜고 칸을 톡 누르면 바꿀 수 있어요." : "칸을 길게 누르거나 오른쪽 클릭하면 넣을 것과 키를 바꿀 수 있어요. 편집을 켜면 왼쪽 클릭으로도 바뀝니다."));
@@ -4799,7 +4827,7 @@ function openMenu() {
       body.append(el("p", "hint", NET.on ? (ps.length ? "지금 함께 있는 사람: " + ps.map(p => `${p.name} Lv${p.lv} (${MAPS[p.map] ? MAPS[p.map].name : "?"})`).join(", ") : "연결됨 · 아직 다른 사람이 없어요. 같은 사냥터에 있으면 서로 보이고, 채팅이 오갑니다.") : "꺼져 있습니다. 켜면 같은 사냥터의 다른 사람이 보이고 채팅이 됩니다."));
       const nb = btn(NET.on ? "함께하기 끄기" : "함께하기 켜기", () => { try { localStorage.setItem("ashgate-online", NET.on ? "0" : "1"); } catch (e) { } if (NET.on) { netStop(); log("함께하기를 껐습니다."); } else netStart(); setTimeout(refreshPanel, 600); });
       body.append(nb);
-      if (NET.on) { const pr = el("div", "rows"); for (const p of ps) { const r = el("div", "row noicon"), nm = el("div", "nm"); nm.append(el("span", "", `${p.name} Lv${p.lv}`), el("small", "", MAPS[p.map] ? MAPS[p.map].name : "")); const a = el("div", "acts"); a.append(btn("거래 신청", () => tradeInvite(p), !!TRADE || p.map !== P.map)); r.append(nm, a); pr.append(r); } if (ps.length) body.append(pr); }
+      if (NET.on) { const pr = el("div", "rows"); for (const p of ps) { const r = el("div", "row noicon"), nm = el("div", "nm"); nm.append(el("span", "", `${p.name} Lv${p.lv}`), el("small", "", MAPS[p.map] ? MAPS[p.map].name : "")); const a = el("div", "acts"); a.append(btn("곁으로 가기", () => jumpTo(p), !!TRADE || P.dead), btn("거래 신청", () => tradeInvite(p), !!TRADE || p.map !== P.map)); r.append(nm, a); pr.append(r); } if (ps.length) body.append(pr); }
     }
     body.append(el("div", "sect", "첫 화면"));
     body.append(el("p", "hint", "저장하고 첫 화면으로 돌아갑니다. 다른 캐릭터를 고르거나 새로 만들 수 있어요 (만든 캐릭터는 모두 남아 있어요)."));
@@ -4920,7 +4948,8 @@ function canFullscreen() { const d = document.documentElement; return !!(d.reque
 function toggleFullscreen(on) { try { const d = document.documentElement; if (on === undefined) on = !fsEl();
   if (on) { const r = d.requestFullscreen ? d.requestFullscreen({ navigationUI: "hide" }) : d.webkitRequestFullscreen && d.webkitRequestFullscreen(); if (r && r.catch) r.catch(() => { }); setTimeout(() => { try { const q = screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape"); if (q && q.catch) q.catch(() => { }); } catch (e) { } }, 300); }
   else { const r = document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen && document.webkitExitFullscreen(); if (r && r.catch) r.catch(() => { }); } } catch (e) { } }
-let fsTried = false;
+let fsTried = false, fsHinted = false;
+function fsHint() { if (fsHinted || !TOUCH() || canFullscreen() || standalone()) return; fsHinted = true; log("전체 화면으로 하려면: Safari 공유 버튼 → 「홈 화면에 추가」 → 홈 화면 아이콘으로 열기"); }
 document.addEventListener("pointerup", e => { if (fsTried || e.pointerType === "mouse" || standalone() || !canFullscreen()) return; fsTried = true; let want = true; try { want = localStorage.getItem("ashgate-fullscreen") !== "0"; } catch (e2) { } if (want) toggleFullscreen(true); }, true);
 for (const ev of ["fullscreenchange", "webkitfullscreenchange"]) document.addEventListener(ev, () => setTimeout(resize, 120));
 
@@ -4983,7 +5012,7 @@ function startFrom(s, imported) {
 }
 function enterGame(map, at) {
   $("cover").hidden = true; $("hud").hidden = false; $("hudR").hidden = false; $("hotbar").hidden = false;
-  buildHotbar(); resize(); loadMap(map || "town", at); clampVitals(); netStart(); netHud();
+  buildHotbar(); resize(); loadMap(map || "town", at); clampVitals(); netStart(); netHud(); fsHint();
 }
 
 // ───────────────────────── creation screen
